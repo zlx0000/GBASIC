@@ -489,26 +489,24 @@ struct ParseTreeNode *parsePrimary(struct ParserContext *context)
 	if (context->token->type == INTEGER)
 	{
 		node->children[0] = parseIntegerLiteral(context);
-		goto a;
 	}
-	if (context->token->type == FLOAT)
+	else if (context->token->type == FLOAT)
 	{
 		node->children[0] = parseFloatLiteral(context);
-		goto a;
 	}
-	if (context->token->type == STRING)
+	else if (context->token->type == STRING)
 	{
 		node->children[0] = parseStringLiteral(context);
-		goto a;
 	}
-	if (context->token->type == IDENTI)
+	else if (context->token->type == IDENTI)
 	{
 		node->children[0] = parseIdentifier(context);
-		goto a;
 	}
-	perror("Invalid primary expression.");
-	return NULL;
-a:
+	else
+	{
+		perror("Invalid primary expression.");
+		return NULL;
+	}
 	if (strcmp(context->token->lexeme, "(") == 0)
 	{
 		struct ParseTreeNode *node2 = parseExpr(context);
