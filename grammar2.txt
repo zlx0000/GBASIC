@@ -1,0 +1,94 @@
+──────────────────────────────────────────────────────────────────────────────
+LEXICAL LAYER  (case–insensitive unless stated otherwise)
+──────────────────────────────────────────────────────────────────────────────
+DIGIT           ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+LETTER          ::= "A" … "Z" | "a" … "z"
+NEWLINE         ::= "\r"? "\n"                        (* CRLF or LF *)
+
+INTEGER-LIT     ::= DIGIT { DIGIT }
+FLOAT-LIT       ::= DIGIT { DIGIT } "." DIGIT { DIGIT }
+STRING-LIT      ::= '"' { '""' | ¬'"' } '"'           (* "" doubles a quote *)
+
+IDENTIFIER      ::= LETTER { LETTER | DIGIT } [ "$" | "%" ]
+
+(* Keywords and operators are recognised only at token boundaries *)
+KEYWORD         ::= "LET" | "PRINT" | "INPUT" | "IF" | "THEN" | "FOR" | "TO"
+                  | "STEP" | "NEXT" | "GOTO" | "GOSUB" | "RETURN" | "END"
+                  | "REM"  | "AND"  | "OR"  | "NOT"
+RELOP           ::= "=" | "<>" | "<=" | ">=" | "<" | ">"
+
+(* A REM comment consumes the rest of the physical line. *)
+COMMENT         ::= "REM" { ¬NEWLINE }
+
+WHITESPACE      ::= " " | "\t" | NEWLINE
+──────────────────────────────────────────────────────────────────────────────
+SYNTACTIC LAYER
+──────────────────────────────────────────────────────────────────────────────
+program         ::= { line }
+
+line            ::= LINENUM statement NEWLINE
+LINENUM         ::= INTEGER-LIT                      (* typically 0–65529 *)
+
+statement       ::= let-stmt
+                  | print-stmt
+                  | input-stmt
+                  | if-stmt
+                  | for-stmt
+                  | goto-stmt
+                  | gosub-stmt
+                  | return-stmt
+                  | end-stmt
+                  | rem-stmt
+
+(* ── simple statements ────────────────────────────────────────────── *)
+let-stmt        ::= [ "LET" ] IDENTIFIER "=" expression
+print-stmt      ::= "PRINT" [ print-list ]
+input-stmt      ::= "INPUT" identifier-list
+goto-stmt       ::= "GOTO" LINENUM
+gosub-stmt      ::= "GOSUB" LINENUM
+return-stmt     ::= "RETURN"
+end-stmt        ::= "END"
+rem-stmt        ::= COMMENT                          (* already swallowed *)
+
+(* ── IF ────────────────────────────────────────────────────────────── *)
+if-stmt         ::= "IF" expression RELOP expression "THEN" LINENUM
+
+(* ── FOR / NEXT  (spans multiple numbered lines) ──────────────────── *)
+for-stmt        ::= "FOR" IDENTIFIER "=" expression "TO" expression
+                    [ "STEP" expression ]
+for-tail        ::= { line } "NEXT" [ IDENTIFIER ]   (* blank identifier ok *)
+
+(* ── PRINT details ────────────────────────────────────────────────── *)
+print-list      ::= print-item { ( "," | ";" ) print-item } [ "," | ";" ]?
+print-item      ::= expression
+                  | "TAB" "(" expression ")"
+                  | "SPC" "(" expression ")"
+
+(* ── expression grammar  (highest to lowest precedence) ───────────── *)
+expression      ::= or-expr
+or-expr         ::= and-expr { "OR" and-expr }
+and-expr        ::= add-expr { "AND" add-expr }
+add-expr        ::= mul-expr { ( "+" | "-" ) mul-expr }
+mul-expr        ::= unary   { ( "*" | "/" ) unary   }
+unary           ::= [ "+" | "-" | "NOT" ] primary
+primary         ::= INTEGER-LIT | FLOAT-LIT | STRING-LIT | IDENTIFIER
+                  | "(" expression ")"
+
+identifier-list ::= IDENTIFIER { "," IDENTIFIER }
+
+──────────────────────────────────────────────────────────────────────────────
+SEMANTIC NOTES  (prose, not BNF)
+──────────────────────────────────────────────────────────────────────────────
+• Execution proceeds in ascending line-number order unless altered by
+  GOTO/GOSUB, IF…THEN, or FOR/NEXT control flow.
+
+• IDENTIFIER suffixes:
+    - `$` ⇒ string variable, `%` ⇒ 16-bit integer, none ⇒ floating-point.
+
+• Variables are implicitly declared on first use; type coercions follow GW-BASIC
+  rules (e.g., `A$ = 3` yields `"3"`).
+
+• `REM` comments and any text after them are ignored by the parser.
+
+• Run-time errors (overflow, division by zero, type mismatch, etc.) are
+  detected during execution, not compilation.

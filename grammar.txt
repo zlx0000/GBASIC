@@ -1,0 +1,42 @@
+<program>      ::= { <line> }
+
+<line>         ::= <linenum> <statement> '\n'
+<linenum>      ::= <integer_literal>
+
+<statement>    ::= <let_stmt>
+                 | <print_stmt>
+                 | <input_stmt>
+                 | <if_stmt>
+                 | <for_stmt>
+                 | <goto_stmt>
+                 | <gosub_stmt>
+                 | <return_stmt>
+                 | <end_stmt>
+                 | <rem_stmt>
+
+<let_stmt>     ::= "LET" <identifier> "=" <expression>
+<print_stmt>   ::= "PRINT" <print_list>
+<print_list>   ::= <expression> { ( "," | ";" ) <expression> }
+<input_stmt>   ::= "INPUT" <identifier_list>
+<if_stmt>      ::= "IF" <expression> <relop> <expression> "THEN" <linenum>
+<for_stmt>     ::= "FOR" <identifier> "=" <expression> "TO" <expression> [ "STEP" <expression> ]
+                   <newline> { <line> } "NEXT" <identifier>
+<goto_stmt>    ::= "GOTO" <linenum>
+<gosub_stmt>   ::= "GOSUB" <linenum>
+<return_stmt>  ::= "RETURN"
+<end_stmt>     ::= "END"
+<rem_stmt>     ::= "REM" <string_literal>
+
+<expression>   ::= <term> { ( "+" | "-" | "AND" | "OR" ) <term> }
+<term>         ::= <factor> { ( "*" | "/" ) <factor> }
+<factor>       ::= [ "-" | "+" | "NOT" ] ( <integer_literal> | <float_literal> | <string_literal> | <identifier>
+                                           | "(" <expression> ")" )
+
+<relop>        ::= "=" | "<>" | "<=" | ">=" | "<" | ">"
+
+<identifier_list> ::= <identifier> { "," <identifier> }
+
+<identifier>   ::= <letter> { <letter> | <digit> } [ "$" | "%" ]
+<integer_literal> ::= <digit> { <digit> }
+<float_literal> ::= <digit> { <digit> } "." <digit> { <digit> }
+<string_literal> ::= '"' { any-char-except-quote } '"'
