@@ -31,7 +31,7 @@ struct ParseTreeNode
 	struct Token token;
 	int type;
 	// int childCount;
-	struct ParseTreeNode *children[64];
+	struct ParseTreeNode *children[32];
 };
 
 struct Program
