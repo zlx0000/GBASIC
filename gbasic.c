@@ -419,6 +419,11 @@ struct ParseTreeNode *parseOrExpr(struct ParserContext *context)
 		struct ParseTreeNode *node3 = parseAndExpr(context);
 		node->children[2] = node3;
 	}
+	else
+	{
+		node->children[1] = NULL;
+		node->children[2] = NULL;
+	}
 	return node;
 }
 
@@ -434,6 +439,11 @@ struct ParseTreeNode *parseAndExpr(struct ParserContext *context)
 		struct ParseTreeNode *node3 = parseAddExpr(context);
 		node->children[2] = node3;
 	}
+	else
+	{
+		node->children[1] = NULL;
+		node->children[2] = NULL;
+	}
 	return node;
 }
 
@@ -448,6 +458,11 @@ struct ParseTreeNode *parseAddExpr(struct ParserContext *context)
 		struct ParseTreeNode *node3 = parseMulExpr(context);
 		node->children[2] = node3;
 	}
+	else
+	{
+		node->children[1] = NULL;
+		node->children[2] = NULL;
+	}
 	return node;
 }
 
@@ -461,6 +476,11 @@ struct ParseTreeNode *parseMulExpr(struct ParserContext *context)
 		node->children[1] = node2;
 		struct ParseTreeNode *node3 = parseUnary(context);
 		node->children[2] = node3;
+	}
+	else
+	{
+		node->children[1] = NULL;
+		node->children[2] = NULL;
 	}
 	return node;
 }
@@ -477,8 +497,9 @@ struct ParseTreeNode *parseUnary(struct ParserContext *context)
 	}
 	else
 	{
+		node->children[0] = NULL;
 		struct ParseTreeNode *node2 = parsePrimary(context);
-		node->children[0] = node2;
+		node->children[1] = node2;
 	}
 	return node;
 }
@@ -502,20 +523,20 @@ struct ParseTreeNode *parsePrimary(struct ParserContext *context)
 	{
 		node->children[0] = parseIdentifier(context);
 	}
-	else
-	{
-		perror("Invalid primary expression.");
-		return NULL;
-	}
-	if (strcmp(context->token->lexeme, "(") == 0)
+	else if (strcmp(context->token->lexeme, "(") == 0)
 	{
 		struct ParseTreeNode *node2 = parseExpr(context);
-		node->children[1] = node2;
+		node->children[0] = node2;
 		if (strcmp(context->token->lexeme, ")") != 0)
 		{
 			perror("Expected closing parenthesis.");
 			return NULL;
 		}
+	}
+	else
+	{
+		perror("Invalid primary expression.");
+		return NULL;
 	}
 }
 
