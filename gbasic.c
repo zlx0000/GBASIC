@@ -296,6 +296,7 @@ struct ParseTreeNode *parseUnary(struct ParserContext *context);
 struct ParseTreeNode *parsePrimary(struct ParserContext *context);
 struct ParseTreeNode *parseMulOperand(struct ParserContext *context);
 struct ParseTreeNode *parseRelOperator(struct ParserContext *context);
+struct ParseTreeNode *parseUnaryOperand(struct ParserContext *context);
 
 void parse(struct ParserContext *context)
 {
@@ -313,7 +314,7 @@ void parse(struct ParserContext *context)
 
 struct ParseTreeNode *parseLine(struct ParserContext *context)
 {
-	struct ParseTreeNode *node = (struct ParseTreeNode *)malloc(sizeof(struct ParseTreeNode));
+	struct ParseTreeNode *node = (struct ParseTreeNode *)calloc(1, sizeof(struct ParseTreeNode));
 	node->type = ROOT;
 	node->children[0] = parseLinenum(context);
 	node->children[1] = parseStatement(context);
@@ -330,7 +331,7 @@ struct ParseTreeNode *parseLinenum(struct ParserContext *context)
 
 struct ParseTreeNode *parseIntegerLiteral(struct ParserContext *context)
 {
-	struct ParseTreeNode *node = (struct ParseTreeNode *)malloc(sizeof(struct ParseTreeNode));
+	struct ParseTreeNode *node = (struct ParseTreeNode *)calloc(1, sizeof(struct ParseTreeNode));
 	node->type = INTEGER;
 	node->token.type = INTEGER;
 	node->token.literal.intValue = atoi(context->tokenPtr->lexeme);
@@ -369,7 +370,7 @@ struct ParseTreeNode *parseStatement(struct ParserContext *context)
 
 struct ParseTreeNode *parseLetStatement(struct ParserContext *context)
 {
-	struct ParseTreeNode *node = (struct ParseTreeNode *)malloc(sizeof(struct ParseTreeNode));
+	struct ParseTreeNode *node = (struct ParseTreeNode *)calloc(1, sizeof(struct ParseTreeNode));
 	node->type = LET;
 	strcpy(context->token->lexeme, node->token.lexeme);
 	context->tokenPtr = context->token;
@@ -382,7 +383,7 @@ struct ParseTreeNode *parseLetStatement(struct ParserContext *context)
 
 struct ParseTreeNode *parseIfStatement(struct ParserContext *context)
 {
-	struct ParseTreeNode *node = (struct ParseTreeNode *)malloc(sizeof(struct ParseTreeNode));
+	struct ParseTreeNode *node = (struct ParseTreeNode *)calloc(1, sizeof(struct ParseTreeNode));
 	node->type = IF;
 	strcpy(context->token->lexeme, node->token.lexeme);
 	context->tokenPtr = context->token;
@@ -401,7 +402,7 @@ struct ParseTreeNode *parseIfStatement(struct ParserContext *context)
 
 struct ParseTreeNode *parseExpr(struct ParserContext *context)
 {
-	struct ParseTreeNode *node = (struct ParseTreeNode *)malloc(sizeof(struct ParseTreeNode));
+	struct ParseTreeNode *node = (struct ParseTreeNode *)calloc(1, sizeof(struct ParseTreeNode));
 	node->token.type = EXPR;
 	node->children[0] = parseOrExpr(context);
 	return node;
@@ -409,7 +410,7 @@ struct ParseTreeNode *parseExpr(struct ParserContext *context)
 
 struct ParseTreeNode *parseOrExpr(struct ParserContext *context)
 {
-	struct ParseTreeNode *node = (struct ParseTreeNode *)malloc(sizeof(struct ParseTreeNode));
+	struct ParseTreeNode *node = (struct ParseTreeNode *)calloc(1, sizeof(struct ParseTreeNode));
 	node->children[0] = parseAndExpr(context);
 	node->type = OR;
 	if (!strcmp(context->token->lexeme, "OR"))
@@ -419,17 +420,12 @@ struct ParseTreeNode *parseOrExpr(struct ParserContext *context)
 		struct ParseTreeNode *node3 = parseAndExpr(context);
 		node->children[2] = node3;
 	}
-	else
-	{
-		node->children[1] = NULL;
-		node->children[2] = NULL;
-	}
 	return node;
 }
 
 struct ParseTreeNode *parseAndExpr(struct ParserContext *context)
 {
-	struct ParseTreeNode *node = (struct ParseTreeNode *)malloc(sizeof(struct ParseTreeNode));
+	struct ParseTreeNode *node = (struct ParseTreeNode *)calloc(1, sizeof(struct ParseTreeNode));
 	node->children[0] = parseAddExpr(context);
 	node->type = AND;
 	if (!strcmp(context->token->lexeme, "AND"))
@@ -439,17 +435,12 @@ struct ParseTreeNode *parseAndExpr(struct ParserContext *context)
 		struct ParseTreeNode *node3 = parseAddExpr(context);
 		node->children[2] = node3;
 	}
-	else
-	{
-		node->children[1] = NULL;
-		node->children[2] = NULL;
-	}
 	return node;
 }
 
 struct ParseTreeNode *parseAddExpr(struct ParserContext *context)
 {
-	struct ParseTreeNode *node = (struct ParseTreeNode * )malloc(sizeof(struct ParseTreeNode));
+	struct ParseTreeNode *node = (struct ParseTreeNode * )calloc(1, sizeof(struct ParseTreeNode));
 	node->children[0] = parseMulExpr(context);
 	if (!strcmp(context->token->lexeme, "+") || !strcmp(context->token->lexeme, "-"))
 	{
@@ -458,17 +449,12 @@ struct ParseTreeNode *parseAddExpr(struct ParserContext *context)
 		struct ParseTreeNode *node3 = parseMulExpr(context);
 		node->children[2] = node3;
 	}
-	else
-	{
-		node->children[1] = NULL;
-		node->children[2] = NULL;
-	}
 	return node;
 }
 
 struct ParseTreeNode *parseMulExpr(struct ParserContext *context)
 {
-	struct ParseTreeNode *node = (struct ParseTreeNode *)malloc(sizeof(struct ParseTreeNode));
+	struct ParseTreeNode *node = (struct ParseTreeNode *)calloc(1, sizeof(struct ParseTreeNode));
 	node->children[0] = parseUnary(context);
 	if (!strcmp(context->token->lexeme, "*") || !strcmp(context->token->lexeme, "/"))
 	{
@@ -487,7 +473,7 @@ struct ParseTreeNode *parseMulExpr(struct ParserContext *context)
 
 struct ParseTreeNode *parseUnary(struct ParserContext *context)
 {
-	struct ParseTreeNode *node = (struct ParseTreeNode *)malloc(sizeof(struct ParseTreeNode));
+	struct ParseTreeNode *node = (struct ParseTreeNode *)calloc(1, sizeof(struct ParseTreeNode));
 	if (!strcmp(context->token->lexeme, "+") || !strcmp(context->token->lexeme, "-") || !strcmp(context->token->lexeme, "NOT"))
 	{
 		struct ParseTreeNode *node2 = parseUnaryOperand(context);
@@ -506,7 +492,7 @@ struct ParseTreeNode *parseUnary(struct ParserContext *context)
 
 struct ParseTreeNode *parsePrimary(struct ParserContext *context)
 {
-	struct ParseTreeNode *node = (struct ParseTreeNode *)malloc(sizeof(struct ParseTreeNode));
+	struct ParseTreeNode *node = (struct ParseTreeNode *)calloc(1, sizeof(struct ParseTreeNode));
 	if (context->token->type == INTEGER)
 	{
 		node->children[0] = parseIntegerLiteral(context);
@@ -577,14 +563,14 @@ int main(int argc, char **argv)
 		}
 		bf[size] = '\0';
 		fclose(fp);
-		struct Program *prog = (struct Program *)malloc(sizeof(struct Program));
+		struct Program *prog = (struct Program *)calloc(1, sizeof(struct Program));
 		if (prog == NULL)
 		{
 			perror("Memory allocation failed.");
 			free(bf);
 			exit(EXIT_FAILURE);
 		}
-		prog->ParseTreeNode = (struct ParseTreeNode **)malloc(sizeof(struct ParseTreeNode *) * 16384);
+		prog->ParseTreeNode = (struct ParseTreeNode **)calloc(1, sizeof(struct ParseTreeNode *) * 16384);
 		if (prog->ParseTreeNode == NULL)
 		{
 			perror("Memory allocation failed.");
@@ -593,16 +579,16 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 
-		struct Token *token = (struct Token *)malloc(sizeof(struct Token) * 25600);
+		struct Token *token = (struct Token *)calloc(1, sizeof(struct Token) * 25600);
 
 		lexer(bf, token);
 
-		struct ParserContext *context = (struct ParserContext *)malloc(sizeof(struct ParserContext));
+		struct ParserContext *context = (struct ParserContext *)calloc(1, sizeof(struct ParserContext));
 		context->token = token;
 		context->tokenPtr = token;
 		context->prog = prog;
-		context->operatorStack = (struct OperatorStack *)malloc(sizeof(struct OperatorStack));
-		context->operandQueue = (struct OperandQueue *)malloc(sizeof(struct OperandQueue));
+		context->operatorStack = (struct OperatorStack *)calloc(1, sizeof(struct OperatorStack));
+		context->operandQueue = (struct OperandQueue *)calloc(1, sizeof(struct OperandQueue));
 		context->tokenPtr = context->token;
 		if (context->operatorStack == NULL || context->operandQueue == NULL)
 		{
