@@ -474,7 +474,9 @@ struct ParseTreeNode *parseMulExpr(struct ParserContext *context)
 struct ParseTreeNode *parseUnary(struct ParserContext *context)
 {
 	struct ParseTreeNode *node = (struct ParseTreeNode *)calloc(1, sizeof(struct ParseTreeNode));
-	if (!strcmp(context->token->lexeme, "+") || !strcmp(context->token->lexeme, "-") || !strcmp(context->token->lexeme, "NOT"))
+	if (!strcmp(context->token->lexeme, "+")
+		|| !strcmp(context->token->lexeme, "-")
+		|| !strcmp(context->token->lexeme, "NOT"))
 	{
 		struct ParseTreeNode *node2 = parseUnaryOperand(context);
 		node->children[0] = node2;
