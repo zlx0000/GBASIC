@@ -7,12 +7,16 @@
 #include <stdint.h>
 
 #define IS_DIGIT(c) ((c) >= '0' && (c) <= '9')
-#define IS_OPERATOR(c)                                                         \
-  ((c) == '+' || (c) == '-' || (c) == '*' || (c) == '/' || (c) == '^' ||       \
-   (c) == '=' || (c) == '<' || (c) == '>' || (c) == '&' || (c) == '|')
+#define IS_ALPHA(c)                                                              \
+	(((c) >= 'a' && (c) <= 'z') || ((c) >= 'A' && (c) <= 'Z') || (c) == '_')
+#define IS_SPACE(c) ((c) == ' ' || (c) == '\t' || (c) == '\n' || (c) == '\r')
+#define IS_CHAR(c) IS_ALPHA(c) || IS_DIGIT(c)
+#define IS_OPERATOR(c)                                                           \
+	((c) == '+' || (c) == '-' || (c) == '*' || (c) == '/' || (c) == '^' ||       \
+	(c) == '=' || (c) == '<' || (c) == '>' || (c) == '&' || (c) == '|')
 
 struct Token {
-	int type;
+	ParseType type;
 	char lexeme[64];
 	union {
 		double floatValue;
@@ -36,7 +40,7 @@ struct Program {
 	struct ParseTreeNode **ParseTreeNode;
 };
 
-enum ParseType {
+typedef enum {
 	TOK_EOF = 0,
 	ROOT,
 	EXPR,
@@ -81,7 +85,7 @@ enum ParseType {
 	COLON,
 	LPAREN,
 	RPAREN
-};
+} ParseType;
 
 struct OperandQueueNode {
 	struct ParseTreeNode *ParseTreeNode;
@@ -199,17 +203,29 @@ struct ParserContext {
 
 enum LexerState {
 	START,
-	IN_NUMBER,
 	IN_CHAR,
+	IN_SPACE,
+	IN_OPERATOR,
+	IN_DIGITS,
+	IN_IDENTIFIER,
+	IN_INT,
+	IN_FLOAT,
+	IN_STRING,
+	IN_OPERATOR,
+	IN_COMMENT,
+	IN_STMT_OR_IDENTIFIER,
+	IN_LEADING_LINENUM,
+	BEFORE_STMT_OR_IDENTIFIER,
+
 };
 
-void lexer(const char *bf, struct Token *token)
+int lexer(const char *bf, struct Token *tokens)
 {
 	if (bf == NULL) {
 		fprintf(stderr, "Buffer is NULL.\n");
 		exit(EXIT_FAILURE);
 	}
-	if (token == NULL) {
+	if (tokens == NULL) {
 		fprintf(stderr, "Token is NULL.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -217,21 +233,128 @@ void lexer(const char *bf, struct Token *token)
 	int tokenIndex = 0;
 	int lineNum = 1;
 	int colNum = 1;
+	char lexeme[64];
+	int lexemeLen = 0;
 	while (*bf != '\0') {
 		switch (state) {
 			case START:
-				if (*bf > '0' && *bf < '9')
-					state = IN_NUMBER;
-				if (*bf > 'a' && *bf < 'z' || *bf > 'A' && *bf < 'Z')
-        			state = IN_CHAR;
+				if (IS_DIGIT(*bf))
+					state = IN_CHAR;
+				else
+				 	perror("Expecting line number at the beginning of the line.");
+					return -1;
 				break;
-			case IN_NUMBER:
+			case IN_SPACE:
+				*bf++;
+				colNum++;
+				if (IS_SPACE(*bf))
+					state = IN_SPACE;
+				if (IS_OPERATOR(*bf))
+					state = IN_OPERATOR;
+				if (IS_CHAR(*bf))
+					state = IN_CHAR;
+				else
+					perror("invalid character");
+					return -1;
 				break;
+			case IN_CHAR:
+				lexeme[lexemeLen++] = *bf++;
+				tokens[tokenIndex].colNum;
+				strcpy(tokens[tokenIndex].lexeme, lexeme);
+				tokens[tokenIndex].lineNum = lineNum;
+				tokenIndex++;
+				colNum++;
+				if (IS_SPACE(*bf))
+					state = IN_SPACE;
+				if (IS_OPERATOR(*bf))
+					state = IN_OPERATOR;
+				if (IS_CHAR(*bf))
+					state = IN_CHAR;
+				else
+					perror("invalid character");
+					return -1;
+				break;
+			case IN_OPERATOR:
+				lexeme[lexemeLen++] = *bf++;
+				tokens[tokenIndex].colNum;
+				strcpy(tokens[tokenIndex].lexeme, lexeme);
+				tokens[tokenIndex].lineNum = lineNum;
+				tokenIndex++;
+				colNum++;
+				if (IS_SPACE(*bf))
+					state = IN_SPACE;
+				if (IS_OPERATOR(*bf))
+					state = IN_OPERATOR;
+				if (IS_CHAR(*bf))
+					state = IN_CHAR;
+				else
+					perror("invalid character");
+					return -1;
+				break;
+
+
+
+
+
+
+					/*
+			case START:
+				if (IS_DIGIT(*bf))
+					state = IN_LEADING_LINENUM;
+				else
+				 	perror("Expecting line number at the beginning of the line.");
+					exit(EXIT_FAILURE);
+				break;
+			case IN_LEADING_LINENUM: // we don't allow leading spaces before the first line number
+				if (IS_DIGIT(*bf)) {
+					lexeme[lexemeLen++] = *bf;
+					bf++;
+					colNum++;
+					break;
+				} 
+				if (IS_SPACE(*bf)){
+					lexeme[lexemeLen] = '\0';
+					tokens[tokenIndex].type = LINENUM;
+					strcpy(tokens[tokenIndex].lexeme, lexeme);
+					tokens[tokenIndex].literal.linenum = atoi(lexeme);
+					tokens[tokenIndex].lineNum = lineNum;
+					tokens[tokenIndex].colNum = colNum - lexemeLen;
+					tokenIndex++;
+					lexemeLen = 0;
+					lexeme[0] = '\0';
+					state = BEFORE_STMT_OR_IDENTIFIER;
+					bf++;
+					colNum++;
+					break;
+				}
+				else {
+					perror("unexpected character in line number.");
+					exit(EXIT_FAILURE);
+				}
+			case BEFORE_STMT_OR_IDENTIFIER:
+				if (IS_SPACE(*bf)) {
+					bf++;
+					colNum++;
+				}
+				else
+					state = IN_STMT_OR_IDENTIFIER;
+				break;
+			case IN_STMT_OR_IDENTIFIER:
+				if (IS_ALPHA(*bf)){
+					lexeme[lexemeLen++] = *bf;
+					bf++;
+					colNum++;
+					break;
+				}
+				if (IS_SPACE(*bf)) {
+
+				}
 			case IN_CHAR:
 				if (*bf > 'z' || *bf < 'a' && *bf > 'Z' || *bf < 'A')
 					state = START;
 				break;
-    	}
+    	}*/
+		}
 	}
 }
 
@@ -274,6 +397,7 @@ void parse(struct ParserContext *context)
 	int lineNum = 0;
 	while (context->tokenPtr != NULL) {
 		context->prog->ParseTreeNode[lineNum] = parseLine(context);
+		lineNum++;
 	}
 }
 
@@ -327,7 +451,7 @@ struct ParseTreeNode *parseStatement(struct ParserContext *context)
 		perror("Unknown statement type.");
 		return NULL;
 	}
-	
+
 	return node;
 }
 
@@ -502,7 +626,7 @@ struct ParseTreeNode *parsePrimary(struct ParserContext *context)
 	} else if (context->tokenPtr->type == IDENTI) {
 		node->children[0] = parseIdentifier(context);
 		node->childCount++;
-	} else if (strcmp(context->tokenPtr->lexeme, "\(") == 0){
+	} else if (strcmp(context->tokenPtr->lexeme, "(") == 0){
 		context->tokenPtr++;
 		struct ParseTreeNode *node2 = parseExpr(context);
 		node->children[0] = node2;
@@ -516,19 +640,20 @@ struct ParseTreeNode *parsePrimary(struct ParserContext *context)
 		perror("Invalid primary expression.");
 		return NULL;
 	}
-  return node;
+	return node;
 }
 
 int main(int argc, char **argv)
 {
-	if (argc <= 1) {
+	FILE *fp = NULL;
+	if (argc <= 1)
 		printf("Usage: gbasic ./file\n");
-	}
 	if (*argv[1]) {
-		FILE *fp = fopen(argv[1], "r");
+		fp = fopen(argv[1], "r");
 		if (fp == NULL) {
-		perror("Can't open file.");
-		exit(EXIT_FAILURE);
+			perror("Can't open file.");
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	fseek(fp, 0, SEEK_END);
@@ -566,15 +691,15 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	struct Token *token =
+	struct Token *tokens =
 		(struct Token *)calloc(1, sizeof(struct Token) * 25600);
 
-	lexer(bf, token);
+	lexer(bf, tokens);
 
 	struct ParserContext *context =
 		(struct ParserContext *)calloc(1, sizeof(struct ParserContext));
-	*context->tokens = token;
-	context->tokenPtr = token;
+	*context->tokens = tokens;
+	context->tokenPtr = tokens;
 	context->prog = prog;
 	context->operatorStack =
 		(struct OperatorStack *)calloc(1, sizeof(struct OperatorStack));
@@ -594,5 +719,5 @@ int main(int argc, char **argv)
 	initOperatorStack(context->operatorStack);
 	initOperandQueue(context->operandQueue);
 	parse(context);
-	}
+	return 0;
 }
