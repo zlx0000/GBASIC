@@ -3,12 +3,14 @@
 int main(int argc, char **argv)
 {
 	FILE *fp = NULL;
-	if (argc <= 1)
+	if (argc <= 1) {
 		printf("Usage: gbasic ./file\n");
+        return 0;
+    }
 	if (*argv[1]) {
 		fp = fopen(argv[1], "r");
 		if (fp == NULL) {
-			fprintf(stderr, "Can't open file.\n");
+			perror("Can't open file.");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -19,14 +21,14 @@ int main(int argc, char **argv)
 
 	char *bf = (char *)malloc(size + 1);
 	if (bf == NULL) {
-		fprintf(stderr, "Can't load the file, memory allocation failed\n");
+		perror("Can't load the file, memory allocation failed");
 		fclose(fp);
 		exit(EXIT_FAILURE);
 	}
 
 	size_t byteRead = fread(bf, 1, size, fp);
 	if (byteRead != size) {
-		fprintf(stderr, "Error reading file.\n");
+		perror("Error reading file.");
 		free(bf);
 		fclose(fp);
 		exit(EXIT_FAILURE);
@@ -35,14 +37,14 @@ int main(int argc, char **argv)
 	fclose(fp);
 	Program *prog = (Program *)calloc(1, sizeof(Program));
 	if (prog == NULL) {
-		fprintf(stderr, "Memory allocation failed.\n");
+		perror("Memory allocation failed.");
 		free(bf);
 		exit(EXIT_FAILURE);
 	}
 	prog->ParseTreeNode = (ParseTreeNode **)calloc(
-		1, sizeof(struct ParseTreeNode *) * 16384);
+		1, sizeof(ParseTreeNode *) * 16384);
 	if (prog->ParseTreeNode == NULL) {
-		fprintf(stderr, "Memory allocation failed.\n");
+		perror("Memory allocation failed.");
 		free(prog);
 		free(bf);
 		exit(EXIT_FAILURE);
@@ -51,14 +53,7 @@ int main(int argc, char **argv)
 	Token *tokens =
 		(Token *)calloc(1, sizeof(Token) * 25600);
 
-	lexer(bf, tokens);
-
-	ParserContext *context =
-		(ParserContext *)calloc(1, sizeof(ParserContext));
-	*context->tokens = tokens;
-	context->tokenPtr = tokens;
-	context->prog = prog;
-	context->tokenPtr = *context->tokens;
-	parse(context);
-	return 0;
+    printf("%s\n", bf);
+	int len = lexer(bf, tokens, 1);
+	for (int i = 0; i < len; i++) printf("%d,%d: %s\n", tokens[i].lineNum, tokens[i].colNum, tokens[i].lexeme);
 }
