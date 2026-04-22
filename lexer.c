@@ -12,7 +12,7 @@ DFA_state is_int(char *t)
 	char *p = t;
 	enum state {
 		start,
-		//sign, //signs should be standalone tokens.
+		//sign, //sign should be standalone tokens.
 		digit
 	} s;
 	s = start;
@@ -54,7 +54,7 @@ DFA_state is_float(char *t)
 	char *p = t;
 	enum state {
 		start,
-		//sign, //signs should be standalone tokens.
+		//sign, //sign should be standalone tokens.
 		digit1,
 		period,
 		digit2
@@ -334,7 +334,7 @@ next:
 					if (states[KEYWORD_TOKEN] != MISMATCH)
 						states[KEYWORD_TOKEN] = is_keyword(t);
 					break;
-				/*		And so on ..	*/
+				
 			}
 		}
 		for (TokenType i = TOKEN_TYPE_NULL+1; i < TOKEN_TYPE_END; i++) {
