@@ -44,14 +44,14 @@ typedef enum {
 
 } LexerState;
 
-typedef enum {
+typedef enum { //the order of which reflects the precedence.
 	TOKEN_TYPE_NULL = 0,
 	KEYWORD_TOKEN,
 	FLOAT_TOKEN,
 	STRING_TOKEN,
 	INT_TOKEN,
 	SPACE_TOKEN,
-	TOKEN_TYPE_END,
+	TOKEN_TYPE_END
 } TokenType;
 
 typedef enum {

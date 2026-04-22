@@ -350,7 +350,7 @@ next:
 	end--;
 	tlen--;
 	if (m.type != TOKEN_TYPE_NULL) {
-		strncpy(tokens[tokenslen].lexeme, start, tlen);
+		strncpy(tokens[tokenslen].lexeme, start, m.len);
 		tokens[tokenslen].literal = literal(m.type, tokens[tokenslen].lexeme);
 		tokens[tokenslen].type = m.type;
 		tokenslen++;
@@ -358,6 +358,9 @@ next:
 		m.type = TOKEN_TYPE_NULL;
 		m.end = start;
 		m.len = 0;
+	} else {
+		fprintf(stderr, "unknown token\n");
+		return 0;
 	}
 	goto next;
 	return tokenslen;

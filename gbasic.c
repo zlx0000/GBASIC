@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 	Token *tokens =
 		(Token *)calloc(1, sizeof(Token) * 25600);
 
-	lexer(bf, tokens);
+	lexer(bf, tokens, 1);
 
 	ParserContext *context =
 		(ParserContext *)calloc(1, sizeof(ParserContext));
