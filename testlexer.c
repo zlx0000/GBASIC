@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 	}
 
 	Token *tokens =
-		(Token *)calloc(1, sizeof(Token) * 25600);
+		(Token *)calloc(1, sizeof(Token) * MAX_TOKEN);
 
     printf("%s\n", bf);
 	int len = lexer(bf, tokens, 1);
