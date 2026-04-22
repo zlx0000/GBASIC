@@ -47,11 +47,11 @@ typedef enum {
 typedef enum {
 	TOKEN_TYPE_NULL = 0,
 	KEYWORD_TOKEN,
-	INT_TOKEN,
 	FLOAT_TOKEN,
 	STRING_TOKEN,
+	INT_TOKEN,
 	SPACE_TOKEN,
-	TOKEN_TYPE_END
+	TOKEN_TYPE_END,
 } TokenType;
 
 typedef enum {
@@ -110,7 +110,7 @@ typedef union {
 } Literal;
 
 typedef struct {
-	Type type;
+	TokenType type;
 	char lexeme[64];
 	Literal literal;
 	int lineNum;
@@ -136,5 +136,5 @@ typedef struct {
 	Token *tokenPtr;
 } ParserContext;
 
-int lexer(const char *bf, Token *tokens, int lineNum);
+size_t lexer(char *bf, Token *tokens, int lineNum);
 void parse(ParserContext *context);

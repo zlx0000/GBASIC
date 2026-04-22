@@ -1,8 +1,6 @@
 #include "gbasic.h"
 #include "keywords.h"
 
-Literal literal(TokenType t, char *lexeme);
-
 typedef enum {
 	MISMATCH,
 	PENDING,
@@ -18,7 +16,7 @@ DFA_state is_int(char *t)
 		digit
 	} s;
 	s = start;
-	while (true) {
+	for (;;) {
 		switch (s) {
 			case start:
 				if (IS_DIGIT(*p))
@@ -62,7 +60,7 @@ DFA_state is_float(char *t)
 		digit2
 	} s;
 	s = start;
-	while (true) {
+	for (;;) {
 		switch (s) {
 			case start:
 				if (IS_DIGIT(*p))
@@ -125,7 +123,7 @@ DFA_state is_space(char *t)
 		b
 	} s;
 	s = a;
-	while (true) {
+	for (;;) {
 		switch (s) {
 			case a:
 				if (IS_SPACE(*p))
@@ -157,7 +155,7 @@ DFA_state is_str(char *t)
 		q2
 	} s;
 	s = q1;
-	while (true) {
+	for (;;) {
 		switch (s) {
 			case q1:
 				if ((*p) == '"')
@@ -184,7 +182,7 @@ DFA_state is_str(char *t)
 					return MISMATCH;
 			case escape:
 				if (IS_EOL(*p))
-					return MISMATCH;
+					return PENDING;
 				p++;
 				s = str;
 				break;
@@ -217,7 +215,7 @@ DFA_state is_ident(char *t)
 		suffix
 	} s;
 	s = alpha;
-	while (true) {
+	for (;;) {
 		switch (s) {
 			case alpha:
 				if (IS_ALPHA(*p))
@@ -271,10 +269,24 @@ DFA_state is_equal(char *t)
 	}
 }
 
+bool possible(DFA_state *s)
+{
+	for (TokenType i = TOKEN_TYPE_NULL+1; i < TOKEN_TYPE_END; i++) {
+		if (s[i] != MISMATCH)
+			return true;
+	}
+	return false;
+}
+
+Literal literal(TokenType t, char *lexeme)
+{
+
+}
+
 size_t lexer(char *bf, Token *tokens, int lineNum)
 {
 	char *bfend = bf;
-	while (*bfend != '\0') bfend++;
+	while(*bfend != '\0') bfend++;
 	if (bfend == bf) return 0;
 	DFA_state states[64];
 	struct longest_match {
@@ -282,22 +294,24 @@ size_t lexer(char *bf, Token *tokens, int lineNum)
 		size_t len;
 		TokenType type;
 	} m;
-	m.end = bf;
-	m.len = 0;
-	m.type = TOKEN_TYPE_NULL;
+	
 	char *start = bf;
 	char *end = bf;
 	size_t tokenslen = 0;
-
-	for (int i = 0; i < 64; i++)
+next:
+	m.end = bf;
+	m.len = 0;
+	m.type = TOKEN_TYPE_NULL;
+	for (TokenType i = TOKEN_TYPE_NULL+1; i < TOKEN_TYPE_END; i++)
     	states[i] = PENDING;
 	char t[64];
 	memset(t, 0, sizeof(t));
 	size_t tlen = 0;
-
-	while (possible(states) && end != '\0') {
+	if (*end == '\0') return tokenslen;
+	while (possible(states) && end <= bfend) {
 		end++;
 		tlen++;
+		strncpy(t, start, tlen);
 		for (TokenType i = TOKEN_TYPE_NULL+1; i < TOKEN_TYPE_END; i++) {
 			switch (i) {
 				case INT_TOKEN:
@@ -307,6 +321,18 @@ size_t lexer(char *bf, Token *tokens, int lineNum)
 				case FLOAT_TOKEN:
 					if (states[FLOAT_TOKEN] != MISMATCH)
 						states[FLOAT_TOKEN] = is_float(t);
+					break;
+				case SPACE_TOKEN:
+					if (states[SPACE_TOKEN] != MISMATCH)
+						states[SPACE_TOKEN] = is_space(t);
+					break;
+				case STRING_TOKEN:
+					if (states[STRING_TOKEN] != MISMATCH)
+						states[STRING_TOKEN] = is_str(t);
+					break;
+				case KEYWORD_TOKEN:
+					if (states[KEYWORD_TOKEN] != MISMATCH)
+						states[KEYWORD_TOKEN] = is_keyword(t);
 					break;
 				/*		And so on ..	*/
 			}
@@ -327,6 +353,12 @@ size_t lexer(char *bf, Token *tokens, int lineNum)
 		strncpy(tokens[tokenslen].lexeme, start, tlen);
 		tokens[tokenslen].literal = literal(m.type, tokens[tokenslen].lexeme);
 		tokens[tokenslen].type = m.type;
+		tokenslen++;
+		start = end;
+		m.type = TOKEN_TYPE_NULL;
+		m.end = start;
+		m.len = 0;
 	}
+	goto next;
 	return tokenslen;
 }
