@@ -1,5 +1,33 @@
 #include "gbasic.h"
 
+static const char *token_type_to_string(TokenType type)
+{
+	switch (type) {
+		case TOKEN_TYPE_NULL:
+			return "TOKEN_TYPE_NULL";
+		case STRING_TOKEN:
+			return "STRING_TOKEN";
+		case KEYWORD_TOKEN:
+			return "KEYWORD_TOKEN";
+		case EQUAL_TOKEN:
+			return "EQUAL_TOKEN";
+		case OP_TOKEN:
+			return "OP_TOKEN";
+		case FLOAT_TOKEN:
+			return "FLOAT_TOKEN";
+		case INT_TOKEN:
+			return "INT_TOKEN";
+		case IDENT_TOKEN:
+			return "IDENT_TOKEN";
+		case SPACE_TOKEN:
+			return "SPACE_TOKEN";
+		case TOKEN_TYPE_END:
+			return "TOKEN_TYPE_END";
+		default:
+			return "UNKNOWN_TOKEN_TYPE";
+	}
+}
+
 int main(int argc, char **argv)
 {
 	FILE *fp = NULL;
@@ -55,5 +83,7 @@ int main(int argc, char **argv)
 
     printf("%s\n", bf);
 	size_t len = lexer(bf, tokens, 1);
-	for (int i = 0; i < len; i++) printf("%d,%d: %s\n", tokens[i].lineNum, tokens[i].colNum, tokens[i].lexeme);
+	for (size_t i = 0; i < len; i++)
+		printf("%d,%d: %s (%s)\n", tokens[i].lineNum, tokens[i].colNum,
+			tokens[i].lexeme, token_type_to_string(tokens[i].type));
 }

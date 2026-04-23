@@ -21,6 +21,8 @@
 	(c) == '=' || (c) == '<' || (c) == '>' || (c) == '&' || (c) == '|' ||        \
 	(c) == '$' || (c) == '%' || (c) == '.' || (c) == ',' || (c) == ';' ||        \
 	IS_CUOT(c) || IS_PAREN(c))
+#define IS_OP(c)                                                              \
+	((c) == '+' || (c) == '-' || (c) == '*' || (c) == '/')
 #define IS_EOL(c) ((c) == '\0')
 
 typedef enum {
@@ -46,12 +48,15 @@ typedef enum {
 
 typedef enum { //the order of which reflects the precedence.
 	TOKEN_TYPE_NULL = 0,
-	KEYWORD_TOKEN,
-	FLOAT_TOKEN,
-	STRING_TOKEN,
-	INT_TOKEN,
-	SPACE_TOKEN,
-	TOKEN_TYPE_END
+    STRING_TOKEN,
+    KEYWORD_TOKEN,
+    EQUAL_TOKEN,
+    OP_TOKEN,
+    FLOAT_TOKEN,
+    INT_TOKEN,
+    IDENT_TOKEN,
+    SPACE_TOKEN,
+    TOKEN_TYPE_END
 } TokenType;
 
 typedef enum {
@@ -105,7 +110,7 @@ typedef enum {
 typedef union {
 	double floatValue;
 	int intValue;
-	char *string;
+	char string[64];
 	int linenum;
 } Literal;
 

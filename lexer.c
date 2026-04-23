@@ -254,23 +254,26 @@ DFA_state is_ident(char *t)
 DFA_state is_equal(char *t)
 {
 	int len = strlen(t);
-	if (len > 2)
+	if (len > 1)
 		return MISMATCH;
 	if (len == 1) {
 		if (t[0] == '=')
-				return PENDING;
-			else
-				return MISMATCH;
-	}
-	if (len == 2) {
-		if (t[0] == '=') {
-			if (t[1] == '\0')
 				return MATCH;
 			else
 				return MISMATCH;
-		}
-		else
-			return MISMATCH;
+	}
+}
+
+DFA_state is_op(char *t)
+{
+	int len = strlen(t);
+	if (len > 1)
+		return MISMATCH;
+	if (len == 1) {
+		if (IS_OP(t[0]))
+				return MATCH;
+			else
+				return MISMATCH;
 	}
 }
 
@@ -290,6 +293,7 @@ Literal literal(TokenType t, char *lexeme)
 
 size_t lexer(char *bf, Token *tokens, int lineNum)
 {
+	int col = 0;
 	char *bfend = bf;
 	while(*bfend != '\0') bfend++;
 	if (bfend == bf) return 0;
@@ -319,6 +323,10 @@ next:
 		strncpy(t, start, tlen);
 		for (TokenType i = TOKEN_TYPE_NULL+1; i < TOKEN_TYPE_END; i++) {
 			switch (i) {
+				case IDENT_TOKEN:
+					if (states[IDENT_TOKEN] != MISMATCH)
+						states[IDENT_TOKEN] = is_ident(t);
+					break;
 				case INT_TOKEN:
 					if (states[INT_TOKEN] != MISMATCH)
 						states[INT_TOKEN] = is_int(t);
@@ -327,27 +335,35 @@ next:
 					if (states[FLOAT_TOKEN] != MISMATCH)
 						states[FLOAT_TOKEN] = is_float(t);
 					break;
-				case SPACE_TOKEN:
-					if (states[SPACE_TOKEN] != MISMATCH)
-						states[SPACE_TOKEN] = is_space(t);
-					break;
 				case STRING_TOKEN:
 					if (states[STRING_TOKEN] != MISMATCH)
 						states[STRING_TOKEN] = is_str(t);
+					break;
+				case OP_TOKEN:
+					if (states[OP_TOKEN] != MISMATCH)
+						states[OP_TOKEN] = is_op(t);
 					break;
 				case KEYWORD_TOKEN:
 					if (states[KEYWORD_TOKEN] != MISMATCH)
 						states[KEYWORD_TOKEN] = is_keyword(t);
 					break;
-				
+				case EQUAL_TOKEN:
+					if (states[EQUAL_TOKEN] != MISMATCH)
+						states[EQUAL_TOKEN] = is_equal(t);
+					break;
+				case SPACE_TOKEN:
+					if (states[SPACE_TOKEN] != MISMATCH)
+						states[SPACE_TOKEN] = is_space(t);
+					break;
 			}
 		}
 		for (TokenType i = TOKEN_TYPE_NULL+1; i < TOKEN_TYPE_END; i++) {
 			if (states[i] == MATCH) {
-				if (tlen > m.len) {
+				if (tlen >= m.len) {
 					m.len = tlen;
 					m.end = end;
 					m.type = i;
+					break;
 				}
 			}
 		}
@@ -355,16 +371,21 @@ next:
 	end--;
 	tlen--;
 	if (m.type != TOKEN_TYPE_NULL) {
-		strncpy(tokens[tokenslen].lexeme, start, m.len);
-		tokens[tokenslen].literal = literal(m.type, tokens[tokenslen].lexeme);
-		tokens[tokenslen].type = m.type;
-		tokenslen++;
+		if (m.type != SPACE_TOKEN) {
+			strncpy(tokens[tokenslen].lexeme, start, m.len);
+			tokens[tokenslen].literal = literal(m.type, tokens[tokenslen].lexeme);
+			tokens[tokenslen].type = m.type;
+			tokens[tokenslen].lineNum = lineNum;
+			tokens[tokenslen].colNum = col;
+			tokenslen++;
+		}
 		start = end;
+		col = start - bf;
 		m.type = TOKEN_TYPE_NULL;
 		m.end = start;
 		m.len = 0;
 	} else {
-		fprintf(stderr, "unknown token\n");
+		fprintf(stderr, "unknown token: %d,%d:\"%s\"\n", lineNum, col, t);
 		return 0;
 	}
 	goto next;
