@@ -375,8 +375,7 @@ next:
 			tokens[tokenslen].colNum = col;
 			tokenslen++;
 		}
-		start = m.end;
-		end = start;
+		start = end;
 		col = start - bf;
 		m.type = TOKEN_TYPE_NULL;
 		m.end = start;
