@@ -193,15 +193,11 @@ DFA_state is_str(char *t)
 DFA_state is_keyword(char* t)
 {
 	char *p = t;
-	while (*p != '\0') {
-		*p = toupper(*p);
-		p++;
-	}
     for (int i = 0; i < KEYWORDS_SIZE; i++) {
         size_t len_t = strlen(t);
         size_t len_k = strlen(keywords[i]);
 
-        if (strncmp(t, keywords[i], len_t) == 0) {
+        if (strncasecmp(t, keywords[i], len_t) == 0) {
             if (len_t == len_k)
                 return MATCH;
             else
@@ -379,7 +375,8 @@ next:
 			tokens[tokenslen].colNum = col;
 			tokenslen++;
 		}
-		start = end;
+		start = m.end;
+		end = start;
 		col = start - bf;
 		m.type = TOKEN_TYPE_NULL;
 		m.end = start;
