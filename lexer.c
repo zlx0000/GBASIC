@@ -246,6 +246,32 @@ DFA_state is_ident(char *t)
 	}
 }
 
+DFA_state is_colon(char *t)
+{
+	int len = strlen(t);
+	if (len > 1)
+		return MISMATCH;
+	if (len == 1) {
+		if (t[0] == ';')
+				return MATCH;
+			else
+				return MISMATCH;
+	}
+}
+
+DFA_state is_comma(char *t)
+{
+	int len = strlen(t);
+	if (len > 1)
+		return MISMATCH;
+	if (len == 1) {
+		if (t[0] == ',')
+				return MATCH;
+			else
+				return MISMATCH;
+	}
+}
+
 DFA_state is_op(char *t)
 {
 	int len = strlen(t);
@@ -339,7 +365,7 @@ int lexer(char *bf, Token *tokens, int lineNum)
 	char *bfend = bf;
 	while(*bfend != '\0') bfend++;
 	if (bfend == bf) return 0;
-	DFA_state states[64];
+	DFA_state states[TOKEN_TYPE_END];
 	struct longest_match {
 		char *end;
 		size_t len;
@@ -401,6 +427,14 @@ next:
 				case PAREN_TOKEN:
 					if (states[PAREN_TOKEN] != MISMATCH)
 						states[PAREN_TOKEN] = is_paren(t);
+					break;
+				case COMMA_TOKEN:
+					if (states[COMMA_TOKEN] != MISMATCH)
+						states[COMMA_TOKEN] = is_comma(t);
+					break;
+				case COLON_TOKEN:
+					if (states[COLON_TOKEN] != MISMATCH)
+						states[COLON_TOKEN] = is_colon(t);
 					break;
 				case SPACE_TOKEN:
 					if (states[SPACE_TOKEN] != MISMATCH)

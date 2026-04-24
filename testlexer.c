@@ -25,6 +25,10 @@ static const char *token_type_to_string(TokenType type)
 			return "TOKEN_TYPE_END";
 		case PAREN_TOKEN:
 			return "PAREN_TOKEN";
+		case COMMA_TOKEN:
+			return "COMMA_TOKEN";
+		case COLON_TOKEN:
+			return "COLON_TOKEN";
 		default:
 			return "UNKNOWN_TOKEN_TYPE";
 	}

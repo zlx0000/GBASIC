@@ -22,7 +22,7 @@
 	(c) == '=' || (c) == '<' || (c) == '>' || (c) == '&' || (c) == '|' ||        \
 	(c) == '$' || (c) == '%' || (c) == '.' || (c) == ',' || (c) == ';' ||        \
 	IS_CUOT(c) || IS_PAREN(c))
-#define IS_OP(c)                                                              \
+#define IS_OP(c)                                                                 \
 	((c) == '+' || (c) == '-' || (c) == '*' || (c) == '/')
 
 #define IS_EOL(c) ((c) == '\0')
@@ -58,6 +58,8 @@ typedef enum { //the order of which reflects the precedence.
     INT_TOKEN,
 	PAREN_TOKEN,
     IDENT_TOKEN,
+	COMMA_TOKEN,
+	COLON_TOKEN,
     SPACE_TOKEN,
     TOKEN_TYPE_END
 } TokenType;
