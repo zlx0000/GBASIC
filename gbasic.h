@@ -8,6 +8,7 @@
 #include <ctype.h>
 
 #define MAX_TOKEN 25600
+#define BFSIZE 256
 
 #define IS_DIGIT(c) ((c) >= '0' && (c) <= '9')
 #define IS_ALPHA(c)                                                              \
@@ -23,6 +24,7 @@
 	IS_CUOT(c) || IS_PAREN(c))
 #define IS_OP(c)                                                              \
 	((c) == '+' || (c) == '-' || (c) == '*' || (c) == '/')
+
 #define IS_EOL(c) ((c) == '\0')
 
 typedef enum {
@@ -50,10 +52,11 @@ typedef enum { //the order of which reflects the precedence.
 	TOKEN_TYPE_NULL = 0,
     STRING_TOKEN,
     KEYWORD_TOKEN,
-    EQUAL_TOKEN,
+    RELOP_TOKEN,
     OP_TOKEN,
     FLOAT_TOKEN,
     INT_TOKEN,
+	PAREN_TOKEN,
     IDENT_TOKEN,
     SPACE_TOKEN,
     TOKEN_TYPE_END
@@ -110,13 +113,13 @@ typedef enum {
 typedef union {
 	double floatValue;
 	int intValue;
-	char string[64];
+	char string[BFSIZE];
 	int linenum;
 } Literal;
 
 typedef struct {
 	TokenType type;
-	char lexeme[64];
+	char lexeme[BFSIZE];
 	Literal literal;
 	int lineNum;
 	int colNum;

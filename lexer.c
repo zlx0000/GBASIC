@@ -247,19 +247,6 @@ DFA_state is_ident(char *t)
 	}
 }
 
-DFA_state is_equal(char *t)
-{
-	int len = strlen(t);
-	if (len > 1)
-		return MISMATCH;
-	if (len == 1) {
-		if (t[0] == '=')
-				return MATCH;
-			else
-				return MISMATCH;
-	}
-}
-
 DFA_state is_op(char *t)
 {
 	int len = strlen(t);
@@ -271,6 +258,36 @@ DFA_state is_op(char *t)
 			else
 				return MISMATCH;
 	}
+}
+
+DFA_state is_paren(char *t)
+{
+	int len = strlen(t);
+	if (len > 1)
+		return MISMATCH;
+	if (len == 1) {
+		if (IS_PAREN(t[0]))
+				return MATCH;
+			else
+				return MISMATCH;
+	}
+}
+
+DFA_state is_relop(char *t)
+{
+	char *p = t;
+    for (int i = 0; i < RELOPS_SIZE; i++) {
+        size_t len_t = strlen(t);
+        size_t len_k = strlen(relops[i]);
+
+        if (strncmp(t, relops[i], len_t) == 0) {
+            if (len_t == len_k)
+                return MATCH;
+            else
+                return PENDING;
+        }
+    }
+    return MISMATCH;
 }
 
 bool possible(DFA_state *s)
@@ -309,7 +326,7 @@ next:
 	m.type = TOKEN_TYPE_NULL;
 	for (TokenType i = TOKEN_TYPE_NULL+1; i < TOKEN_TYPE_END; i++)
     	states[i] = PENDING;
-	char t[64];
+	char t[BFSIZE];
 	memset(t, 0, sizeof(t));
 	size_t tlen = 0;
 	if (start >= bfend)
@@ -317,6 +334,10 @@ next:
 	while (possible(states) && end < bfend) {
 		end++;
 		tlen++;
+		if (tlen >= BFSIZE - 2) {
+			fprintf(stderr, "token at %d,%d is too long: `%.20s`\n", lineNum, col, t);
+			return -1;
+		}
 		strncpy(t, start, tlen);
 		for (TokenType i = TOKEN_TYPE_NULL+1; i < TOKEN_TYPE_END; i++) {
 			switch (i) {
@@ -344,9 +365,13 @@ next:
 					if (states[KEYWORD_TOKEN] != MISMATCH)
 						states[KEYWORD_TOKEN] = is_keyword(t);
 					break;
-				case EQUAL_TOKEN:
-					if (states[EQUAL_TOKEN] != MISMATCH)
-						states[EQUAL_TOKEN] = is_equal(t);
+				case RELOP_TOKEN:
+					if (states[RELOP_TOKEN] != MISMATCH)
+						states[RELOP_TOKEN] = is_relop(t);
+					break;
+				case PAREN_TOKEN:
+					if (states[PAREN_TOKEN] != MISMATCH)
+						states[PAREN_TOKEN] = is_paren(t);
 					break;
 				case SPACE_TOKEN:
 					if (states[SPACE_TOKEN] != MISMATCH)
@@ -382,7 +407,7 @@ next:
 		m.end = start;
 		m.len = 0;
 	} else {
-		fprintf(stderr, "unknown token: %d,%d:\"%s\"\n", lineNum, col, t);
+		fprintf(stderr, "unexpected token at %d,%d: `%s`\n", lineNum, col, t);
 		return -1;
 	}
 	goto next;

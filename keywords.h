@@ -3,3 +3,7 @@ char *keywords[] = {"LET", "PRINT", "INPUT", "IF", "THEN", "FOR", "TO",
                   	 "REM", "AND", "OR", "NOT"};
 
 #define KEYWORDS_SIZE sizeof(keywords) / sizeof(keywords[0])
+
+char *relops[] = {"=", "<>", "<=", ">=", "<", ">"};
+
+#define RELOPS_SIZE sizeof(relops) / sizeof(relops[0])

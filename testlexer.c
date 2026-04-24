@@ -9,8 +9,8 @@ static const char *token_type_to_string(TokenType type)
 			return "STRING_TOKEN";
 		case KEYWORD_TOKEN:
 			return "KEYWORD_TOKEN";
-		case EQUAL_TOKEN:
-			return "EQUAL_TOKEN";
+		case RELOP_TOKEN:
+			return "RELOP_TOKEN";
 		case OP_TOKEN:
 			return "OP_TOKEN";
 		case FLOAT_TOKEN:
@@ -23,6 +23,8 @@ static const char *token_type_to_string(TokenType type)
 			return "SPACE_TOKEN";
 		case TOKEN_TYPE_END:
 			return "TOKEN_TYPE_END";
+		case PAREN_TOKEN:
+			return "PAREN_TOKEN";
 		default:
 			return "UNKNOWN_TOKEN_TYPE";
 	}
