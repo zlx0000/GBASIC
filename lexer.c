@@ -325,6 +325,7 @@ Literal literal(TokenType t, char *lexeme)
 						r.string[j++] = '\n';
 					else
 						r.string[j++] = lexeme[i];
+					escape = false;
 				}
 			}
 			return r;
@@ -440,6 +441,6 @@ next:
 		return -1;
 	}
 	goto next;
-	
+
 	return tokenslen;
 }
