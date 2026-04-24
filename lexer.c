@@ -192,7 +192,6 @@ DFA_state is_str(char *t)
 
 DFA_state is_keyword(char* t)
 {
-	char *p = t;
     for (int i = 0; i < KEYWORDS_SIZE; i++) {
         size_t len_t = strlen(t);
         size_t len_k = strlen(keywords[i]);
