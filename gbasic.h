@@ -141,5 +141,5 @@ typedef struct {
 	Token *tokenPtr;
 } ParserContext;
 
-size_t lexer(char *bf, Token *tokens, int lineNum);
+int lexer(char *bf, Token *tokens, int lineNum);
 void parse(ParserContext *context);

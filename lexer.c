@@ -287,7 +287,7 @@ Literal literal(TokenType t, char *lexeme)
 
 }
 
-size_t lexer(char *bf, Token *tokens, int lineNum)
+int lexer(char *bf, Token *tokens, int lineNum)
 {
 	int col = 0;
 	char *bfend = bf;
@@ -303,8 +303,8 @@ size_t lexer(char *bf, Token *tokens, int lineNum)
 	char *start = bf;
 	char *end = bf;
 	size_t tokenslen = 0;
-next:
 	m.end = bf;
+next:
 	m.len = 0;
 	m.type = TOKEN_TYPE_NULL;
 	for (TokenType i = TOKEN_TYPE_NULL+1; i < TOKEN_TYPE_END; i++)
@@ -312,8 +312,9 @@ next:
 	char t[64];
 	memset(t, 0, sizeof(t));
 	size_t tlen = 0;
-	if (*end == '\0') return tokenslen;
-	while (possible(states) && end <= bfend) {
+	if (start >= bfend)
+		return tokenslen;
+	while (possible(states) && end < bfend) {
 		end++;
 		tlen++;
 		strncpy(t, start, tlen);
@@ -364,25 +365,25 @@ next:
 			}
 		}
 	}
-	end--;
-	tlen--;
 	if (m.type != TOKEN_TYPE_NULL) {
 		if (m.type != SPACE_TOKEN) {
 			strncpy(tokens[tokenslen].lexeme, start, m.len);
+			tokens[tokenslen].lexeme[m.len] = '\0';
 			tokens[tokenslen].literal = literal(m.type, tokens[tokenslen].lexeme);
 			tokens[tokenslen].type = m.type;
 			tokens[tokenslen].lineNum = lineNum;
 			tokens[tokenslen].colNum = col;
 			tokenslen++;
 		}
-		start = end;
+		start = m.end;
+		end = start;
 		col = start - bf;
 		m.type = TOKEN_TYPE_NULL;
 		m.end = start;
 		m.len = 0;
 	} else {
 		fprintf(stderr, "unknown token: %d,%d:\"%s\"\n", lineNum, col, t);
-		return 0;
+		return -1;
 	}
 	goto next;
 	return tokenslen;

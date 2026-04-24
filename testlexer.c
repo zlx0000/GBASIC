@@ -82,8 +82,11 @@ int main(int argc, char **argv)
 		(Token *)calloc(1, sizeof(Token) * MAX_TOKEN);
 
     printf("%s\n", bf);
-	size_t len = lexer(bf, tokens, 1);
+	int len = lexer(bf, tokens, 1);
+	if (len < 0)
+		return len;
 	for (size_t i = 0; i < len; i++)
 		printf("%d,%d: %s (%s)\n", tokens[i].lineNum, tokens[i].colNum,
 			tokens[i].lexeme, token_type_to_string(tokens[i].type));
-}
+	return 0;
+		}
