@@ -95,4 +95,4 @@ int main(int argc, char **argv)
 		printf("%d,%d: %s (%s)\n", tokens[i].lineNum, tokens[i].colNum,
 			tokens[i].lexeme, token_type_to_string(tokens[i].type));
 	return 0;
-		}
+}
