@@ -59,22 +59,25 @@ typedef enum { //the order of which reflects the precedence.
 	PAREN_TOKEN,
     IDENT_TOKEN,
 	COMMA_TOKEN,
-	COLON_TOKEN,
+	SEMICOLON_TOKEN,
     SPACE_TOKEN,
     TOKEN_TYPE_END
 } TokenType;
 
 typedef enum {
-	TYPE_NULL = 0,
-	TOK_EOF,
+	NODE_TYPE_NULL = 0,
 	ROOT,
 	EXPR,
-	NEWLINE,
+	OR_EXPR,
+	AND_EXPR,
+	ADD_EXPR,
+	MUL_EXPR,
+	UNARY,
 	LINENUM,
 	INTEGER,
 	FLOAT,
-	INTEGERVAR,
-	FLOATVAR,
+	INTEGERIDENT,
+	FLOATIDENT,
 	STRING,
 	IDENTI,
 	REM,
@@ -110,7 +113,7 @@ typedef enum {
 	COLON,
 	LPAREN,
 	RPAREN
-} Type;
+} NodeType;
 
 typedef union {
 	double floatValue;
@@ -127,20 +130,21 @@ typedef struct {
 	int colNum;
 } Token;
 
-typedef struct {
-	Token token;
-	int type;
+typedef struct ParseTreeNode {
+	Token *token;
+	NodeType type;
 	unsigned int childCount;
 	struct ParseTreeNode *children[32];
 } ParseTreeNode;
 
 typedef struct {
 	int lineCount;
-	ParseTreeNode **ParseTreeNode;
+	ParseTreeNode **lines;
 } Program;
 
 typedef struct {
-	Token **tokens;
+	Token *tokens;
+	int tokenLen;
 	Program *prog;
 	// char token[64];
 	Token *tokenPtr;
@@ -148,3 +152,33 @@ typedef struct {
 
 int lexer(char *bf, Token *tokens, int lineNum);
 void parse(ParserContext *context);
+
+// advance the token pointer by one after successfully parsing a token
+ParseTreeNode *parseLine(ParserContext *context);
+ParseTreeNode *parseLinenum(ParserContext *context);
+ParseTreeNode *parseIntegerLiteral(ParserContext *context);
+ParseTreeNode *parseFloatLiteral(ParserContext *context);
+ParseTreeNode *parseStringLiteral(ParserContext *context);
+ParseTreeNode *parseDigit(ParserContext *context);
+ParseTreeNode *parseStatement(ParserContext *context);
+ParseTreeNode *parseLetStatement(ParserContext *context);
+ParseTreeNode *parseExpr(ParserContext *context);
+ParseTreeNode *parseIfStatement(ParserContext *context);
+ParseTreeNode *parsePrintStatement(ParserContext *context);
+ParseTreeNode *parseInputStatement(ParserContext *context);
+ParseTreeNode *parseIdentifier(ParserContext *context);
+ParseTreeNode *parseEqual(ParserContext *context);
+ParseTreeNode *parseTerm(ParserContext *context);
+void *parseEOL(ParserContext *context);
+ParseTreeNode *parseOrExpr(ParserContext *context);
+ParseTreeNode *parseOrOperand(ParserContext *context);
+ParseTreeNode *parseAndExpr(ParserContext *context);
+ParseTreeNode *parseAndOperand(ParserContext *context);
+ParseTreeNode *parseAddExpr(ParserContext *context);
+ParseTreeNode *parseAddOperand(ParserContext *context);
+ParseTreeNode *parseMulExpr(ParserContext *context);
+ParseTreeNode *parseUnary(ParserContext *context);
+ParseTreeNode *parsePrimary(ParserContext *context);
+ParseTreeNode *parseMulOperand(ParserContext *context);
+ParseTreeNode *parseRelOperator(ParserContext *context);
+ParseTreeNode *parseUnaryOperand(ParserContext *context);

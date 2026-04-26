@@ -5,8 +5,8 @@ DIGIT           ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 LETTER          ::= "A" … "Z" | "a" … "z"
 NEWLINE         ::= "\r"? "\n"                        (* CRLF or LF *)
 
-INTEGER-LIT     ::= DIGIT { DIGIT }
-FLOAT-LIT       ::= DIGIT { DIGIT } "." DIGIT { DIGIT }
+INTEGER-LIT     ::= [ "+" | "-" ] DIGIT { DIGIT }
+FLOAT-LIT       ::= [ "+" | "-" ] DIGIT { DIGIT } "." DIGIT { DIGIT }
 STRING-LIT      ::= '"' { '""' | ¬'"' } '"'           (* "" doubles a quote *)
 
 IDENTIFIER      ::= LETTER { LETTER | DIGIT } [ "$" | "%" ]

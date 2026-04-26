@@ -432,9 +432,9 @@ next:
 					if (states[COMMA_TOKEN] != MISMATCH)
 						states[COMMA_TOKEN] = is_comma(t);
 					break;
-				case COLON_TOKEN:
-					if (states[COLON_TOKEN] != MISMATCH)
-						states[COLON_TOKEN] = is_colon(t);
+				case SEMICOLON_TOKEN:
+					if (states[SEMICOLON_TOKEN] != MISMATCH)
+						states[SEMICOLON_TOKEN] = is_colon(t);
 					break;
 				case SPACE_TOKEN:
 					if (states[SPACE_TOKEN] != MISMATCH)

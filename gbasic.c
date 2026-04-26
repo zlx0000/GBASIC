@@ -39,9 +39,9 @@ int main(int argc, char **argv)
 		free(bf);
 		exit(EXIT_FAILURE);
 	}
-	prog->ParseTreeNode = (ParseTreeNode **)calloc(
+	prog->lines = (ParseTreeNode **)calloc(
 		1, sizeof(struct ParseTreeNode *) * 16384);
-	if (prog->ParseTreeNode == NULL) {
+	if (prog->lines == NULL) {
 		fprintf(stderr, "Memory allocation failed.\n");
 		free(prog);
 		free(bf);
@@ -53,12 +53,10 @@ int main(int argc, char **argv)
 
 	lexer(bf, tokens, 1);
 
-	ParserContext *context =
-		(ParserContext *)calloc(1, sizeof(ParserContext));
-	*context->tokens = tokens;
-	context->tokenPtr = tokens;
-	context->prog = prog;
-	context->tokenPtr = *context->tokens;
-	parse(context);
+	ParserContext context;
+	context.tokens = tokens;
+	context.tokenPtr = tokens;
+	context.prog = prog;
+	parse(&context);
 	return 0;
 }
