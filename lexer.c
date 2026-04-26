@@ -246,7 +246,7 @@ DFA_state is_ident(char *t)
 	}
 }
 
-DFA_state is_colon(char *t)
+DFA_state is_semicolon(char *t)
 {
 	int len = strlen(t);
 	if (len > 1)
@@ -434,7 +434,7 @@ next:
 					break;
 				case SEMICOLON_TOKEN:
 					if (states[SEMICOLON_TOKEN] != MISMATCH)
-						states[SEMICOLON_TOKEN] = is_colon(t);
+						states[SEMICOLON_TOKEN] = is_semicolon(t);
 					break;
 				case SPACE_TOKEN:
 					if (states[SPACE_TOKEN] != MISMATCH)
