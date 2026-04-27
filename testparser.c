@@ -37,9 +37,9 @@ static const char *token_type_to_string(TokenType type)
 int main(int argc, char **argv)
 {
 	FILE *fp = NULL;
+	char str[1024];
+	int line = 1;
 	if (argc <= 1) {
-		char str[1024];
-		int line = 1;
 repl:
 		printf(">");
 		if (!fgets(str, sizeof(str), stdin)) {
@@ -105,9 +105,26 @@ repl:
 
 	Token *tokens =
 		(Token *)calloc(1, sizeof(Token) * MAX_TOKEN);
-
-    printf("%s\n", bf);
+		char *start = bf;
+	char *end = start;
+	int slen = 0;
+next:
+	while (*end != '\n' && *end != '\0') {
+		*end++;
+		slen++;
+	}
+	if (slen == 0)
+		return 0;
+	strncpy(str, start, slen);
+	str[slen] = '\0';
+	slen = 0;
+	if (*end != '\0') {
+		start = end + 1;
+		end = start;
+	}
+    printf("%s\n", str);
 	int len = lexer(bf, tokens, 1);
+	line++;
 	if (len < 0)
 		return len;
 	for (size_t i = 0; i < len; i++)
@@ -121,5 +138,5 @@ repl:
 	ctx.prog->lineCount = 1;
 	ctx.err = false;
     ParseTreeNode *p = parseLine(&ctx);
-	return 0;
+	goto next;
 }

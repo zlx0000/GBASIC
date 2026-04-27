@@ -37,9 +37,9 @@ static const char *token_type_to_string(TokenType type)
 int main(int argc, char **argv)
 {
 	FILE *fp = NULL;
+	char str[1024];
+	int line = 1;
 	if (argc <= 1) {
-		char str[1024];
-		int line = 1;
 repl:
 		printf(">");
 		if (!fgets(str, sizeof(str), stdin)) {
@@ -106,12 +106,30 @@ repl:
 	Token *tokens =
 		(Token *)calloc(1, sizeof(Token) * MAX_TOKEN);
 
-    printf("%s\n", bf);
-	int len = lexer(bf, tokens, 1);
+	char *start = bf;
+	char *end = start;
+	int slen = 0;
+next:
+	while (*end != '\n' && *end != '\0') {
+		*end++;
+		slen++;
+	}
+	if (slen == 0)
+		return 0;
+	strncpy(str, start, slen);
+	str[slen] = '\0';
+	slen = 0;
+	if (*end != '\0') {
+		start = end + 1;
+		end = start;
+	}
+    printf("%s\n", str);
+	int len = lexer(str, tokens, line);
+	line++;
 	if (len < 0)
 		return len;
 	for (size_t i = 0; i < len; i++)
 		printf("%d,%d: %s (%s)\n", tokens[i].lineNum, tokens[i].colNum,
 			tokens[i].lexeme, token_type_to_string(tokens[i].type));
-	return 0;
+	goto next;
 }
