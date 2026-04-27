@@ -48,16 +48,17 @@ repl:
     	}
 		if (strcasecmp(str, "exit\n") == 0)
 			return 0;
+		str[strlen(str)] = '\0';
 		Token *tokens =
 		(Token *)calloc(1, sizeof(Token) * MAX_TOKEN);
 
 		int len = lexer(str, tokens, line);
 		if (len > 0) {
+			line++;
 			for (size_t i = 0; i < len; i++)
 				printf("%d,%d: %s (%s)\n", tokens[i].lineNum, tokens[i].colNum,
 					tokens[i].lexeme, token_type_to_string(tokens[i].type));
 		}
-		line++;
 		goto repl;
     }
 	if (*argv[1]) {
