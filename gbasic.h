@@ -12,7 +12,7 @@
 #define IS_ALPHA(c)                                                              \
 	(((c) >= 'a' && (c) <= 'z') || ((c) >= 'A' && (c) <= 'Z') || (c) == '_')
 #define IS_SPACE(c) ((c) == ' ' || (c) == '\t' || (c) == '\n' || (c) == '\r')
-#define IS_CHAR(c) (IS_ALPHA(c) || IS_DIGIT(c))
+#define IS_CHAR(c) (IS_ALPHA(c) || IS_DIGIT(c) || (c) == '_')
 #define IS_QUOT(c) ((c) == '"' || (c) == '\'')
 #define IS_PAREN(c) ((c) == '(' || (c) == ')')
 #define IS_SYMBOL(c)                                                             \
