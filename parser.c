@@ -1,5 +1,9 @@
 #include "gbasic.h"
+
 #define CONSUME_TOKEN context->tokenPtr++
+#define ERR(str) fprintf(stderr, "%s at %d,%d: `%s`,\n",           \
+		str,context->tokenPtr->lineNum, context->tokenPtr->colNum, \
+		context->tokenPtr->lexeme); context->err = true ;return NULL
 
 void parse(ParserContext *context)
 {
@@ -25,7 +29,7 @@ ParseTreeNode *parseLine(ParserContext *context)
 	node->children[1] = parseStatement(context);
 	node->childCount++;
 	if (context->tokenPtr - context->tokens != context->tokenLen - 1) {
-		fprintf(stderr, "Token stream does not end at %d,%d: `%s`,\n", context->tokenPtr->lineNum, context->tokenPtr->colNum, context->tokenPtr->lexeme);
+		ERR("Token stream does not end");
 		return NULL;
 	}
 	//parseEOL(context);
@@ -45,8 +49,7 @@ ParseTreeNode *parseIntegerLiteral(ParserContext *context)
 	ParseTreeNode *node =
 		(ParseTreeNode *)calloc(1, sizeof(ParseTreeNode));
 	if (context->tokenPtr->type != INT_TOKEN) {
-		fprintf(stderr, "Not a integer at %d,%d: `%s`,\n", context->tokenPtr->lineNum, context->tokenPtr->colNum, context->tokenPtr->lexeme);
-		return NULL;
+		ERR("Not a integer");
 	}
 	node->childCount = 0;
 	node->type = INTEGER;
@@ -60,11 +63,24 @@ ParseTreeNode *parseFloatLiteral(ParserContext *context)
 	ParseTreeNode *node =
 		(ParseTreeNode *)calloc(1, sizeof(ParseTreeNode));
 	if (context->tokenPtr->type != FLOAT_TOKEN) {
-		fprintf(stderr, "Not a float at %d,%d: `%s`,\n", context->tokenPtr->lineNum, context->tokenPtr->colNum, context->tokenPtr->lexeme);
-		return NULL;
+		ERR("Not a float");
 	}
 	node->childCount = 0;
 	node->type = FLOAT;
+	node->token = context->tokenPtr;
+	CONSUME_TOKEN;
+	return node;
+}
+
+ParseTreeNode *parseStringLiteral(ParserContext *context)
+{
+	ParseTreeNode *node =
+		(ParseTreeNode *)calloc(1, sizeof(ParseTreeNode));
+	if (context->tokenPtr->type != STRING_TOKEN) {
+		ERR("Not a string");
+	}
+	node->childCount = 0;
+	node->type = STRING;
 	node->token = context->tokenPtr;
 	CONSUME_TOKEN;
 	return node;
@@ -83,12 +99,10 @@ ParseTreeNode *parseStatement(ParserContext *context)
 		else if (strcasecmp(context->tokenPtr->lexeme, "INPUT") == 0)
 			node = parseInputStatement(context);
 		else {
-			fprintf(stderr, "Unknown statement type at %d,%d: `%s`,\n", context->tokenPtr->lineNum, context->tokenPtr->colNum, context->tokenPtr->lexeme);
-			return NULL;
+			ERR("Unknown statement type");
 		}
 	} else {
-		fprintf(stderr, "Not a statement type at %d,%d: `%s`,\n", context->tokenPtr->lineNum, context->tokenPtr->colNum, context->tokenPtr->lexeme);
-		return NULL;
+		ERR("Not a statement type");
 	}
 
 	return node;
@@ -96,6 +110,10 @@ ParseTreeNode *parseStatement(ParserContext *context)
 
 ParseTreeNode *parseLetStatement(ParserContext *context)
 {
+	if (context->tokenPtr->type != KEYWORD_TOKEN
+		&& strcasecmp(context->tokenPtr->lexeme, "LET") != 0) {
+		ERR("Not a LET statement");
+	}
 	ParseTreeNode *node =
 		(ParseTreeNode *)calloc(1, sizeof(ParseTreeNode));
 	node->childCount = 0;
@@ -137,6 +155,15 @@ ParseTreeNode *parseIfStatement(ParserContext *context)
 	return node;
 }
 
+ParseTreeNode *parsePrintStatement(ParserContext *context)
+{
+	ParseTreeNode *node =
+		(ParseTreeNode *)calloc(1, sizeof(ParseTreeNode));
+	node->childCount = 0;
+	node->type = IF;
+	node->token = context->tokenPtr;
+}
+
 ParseTreeNode *parseExpr(ParserContext *context)
 {
 	ParseTreeNode *node;
@@ -163,12 +190,26 @@ ParseTreeNode *parseOrExpr(ParserContext *context)
 	return node;
 }
 
+
+ParseTreeNode *parseOrOperand(ParserContext *context)
+{
+	ParseTreeNode *node =
+		(ParseTreeNode *)calloc(1, sizeof(ParseTreeNode));
+	if (context->tokenPtr->type == KEYWORD_TOKEN
+		&& strcasecmp(context->tokenPtr->lexeme, "OR") == 0) {
+		node->type = OR_OP;
+		node->token = context->tokenPtr;
+		node->childCount = 0;
+		CONSUME_TOKEN;
+	}
+}
+
 ParseTreeNode *parseAndExpr(ParserContext *context)
 {
 	ParseTreeNode *node =
 		(ParseTreeNode *)calloc(1, sizeof(ParseTreeNode));
 	node->childCount = 0;
-	node->type = AND;
+	node->type = AND_EXPR;
 	node->children[0] = parseAddExpr(context);
 	if (!strcasecmp(context->tokenPtr->lexeme, "AND")) {
 		struct ParseTreeNode *node2 = parseAndOperand(context);
@@ -179,6 +220,19 @@ ParseTreeNode *parseAndExpr(ParserContext *context)
 		node->childCount++;
 	}
 	return node;
+}
+
+ParseTreeNode *parseAndOperand(ParserContext *context)
+{
+	ParseTreeNode *node =
+		(ParseTreeNode *)calloc(1, sizeof(ParseTreeNode));
+	if (context->tokenPtr->type == KEYWORD_TOKEN
+		&& strcasecmp(context->tokenPtr->lexeme, "AND") == 0) {
+		node->type = AND_OP;
+		node->token = context->tokenPtr;
+		node->childCount = 0;
+		CONSUME_TOKEN;
+	}
 }
 
 ParseTreeNode *parseAddExpr(ParserContext *context)
@@ -268,7 +322,7 @@ ParseTreeNode *parsePrimary(ParserContext *context)
 	} else if (strcmp(context->tokenPtr->lexeme, "(") == 0){
 		CONSUME_TOKEN;
 		struct ParseTreeNode *node2 = parseExpr(context);
-		node->children[0] = node2;
+		node->children[node->childCount] = node2;
 		node->childCount++;
 		if (strcmp(context->tokenPtr->lexeme, ")") != 0) {
 			CONSUME_TOKEN;

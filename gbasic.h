@@ -27,27 +27,6 @@
 
 #define IS_EOL(c) ((c) == '\0')
 
-typedef enum {
-	START,
-	IN_CHAR,
-	IN_SPACE,
-    IN_SYMBOL,
-	IN_PAREN,
-	IN_CUOT,
-	IN_OPERATOR,
-	IN_DIGITS,
-	IN_IDENTIFIER,
-	IN_INT,
-	IN_FLOAT,
-	IN_STRING,
-	IN_COMMENT,
-	IN_STMT_OR_IDENTIFIER,
-	IN_LEADING_LINENUM,
-	BEFORE_STMT_OR_IDENTIFIER,
-    FINAL
-
-} LexerState;
-
 typedef enum { //the order of which reflects the precedence.
 	TOKEN_TYPE_NULL = 0,
     STRING_TOKEN,
@@ -105,8 +84,8 @@ typedef enum {
 	LE,
 	GE,
 	NE,
-	AND,
-	OR,
+	AND_OP,
+	OR_OP,
 	NOT,
 	COMMA,
 	SEMICOLON,
@@ -148,6 +127,7 @@ typedef struct {
 	Program *prog;
 	// char token[64];
 	Token *tokenPtr;
+	bool err;
 } ParserContext;
 
 int lexer(char *bf, Token *tokens, int lineNum);
@@ -159,7 +139,7 @@ ParseTreeNode *parseLinenum(ParserContext *context);
 ParseTreeNode *parseIntegerLiteral(ParserContext *context);
 ParseTreeNode *parseFloatLiteral(ParserContext *context);
 ParseTreeNode *parseStringLiteral(ParserContext *context);
-ParseTreeNode *parseDigit(ParserContext *context);
+//ParseTreeNode *parseDigit(ParserContext *context);
 ParseTreeNode *parseStatement(ParserContext *context);
 ParseTreeNode *parseLetStatement(ParserContext *context);
 ParseTreeNode *parseExpr(ParserContext *context);
