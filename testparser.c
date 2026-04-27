@@ -57,6 +57,7 @@ repl:
 				printf("%d,%d: %s (%s)\n", tokens[i].lineNum, tokens[i].colNum,
 					tokens[i].lexeme, token_type_to_string(tokens[i].type));
 		}
+		line++;
 		goto repl;
     }
 	if (*argv[1]) {
