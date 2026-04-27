@@ -38,8 +38,26 @@ int main(int argc, char **argv)
 {
 	FILE *fp = NULL;
 	if (argc <= 1) {
-		printf("Usage: gbasic ./file\n");
-        return 0;
+		char str[1024];
+		int line = 1;
+repl:
+		printf(">");
+		if (!fgets(str, sizeof(str), stdin)) {
+        	printf("\n");
+        	return 0;
+    	}
+		if (strcasecmp(str, "exit\n") == 0)
+			return 0;
+		Token *tokens =
+		(Token *)calloc(1, sizeof(Token) * MAX_TOKEN);
+
+		int len = lexer(str, tokens, line);
+		if (len > 0) {
+			for (size_t i = 0; i < len; i++)
+				printf("%d,%d: %s (%s)\n", tokens[i].lineNum, tokens[i].colNum,
+					tokens[i].lexeme, token_type_to_string(tokens[i].type));
+		}
+		goto repl;
     }
 	if (*argv[1]) {
 		fp = fopen(argv[1], "r");
