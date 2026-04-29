@@ -48,7 +48,7 @@ repl:
     	}
 		if (strcasecmp(str, "exit\n") == 0)
 			return 0;
-		str[strlen(str)] = '\0';
+		str[strlen(str)-1] = '\0';
 		Token *tokens =
 		(Token *)calloc(1, sizeof(Token) * MAX_TOKEN);
 
@@ -115,8 +115,6 @@ next:
 		*end++;
 		slen++;
 	}
-	if (slen == 0)
-		return 0;
 	strncpy(str, start, slen);
 	str[slen] = '\0';
 	slen = 0;
@@ -132,5 +130,7 @@ next:
 	for (size_t i = 0; i < len; i++)
 		printf("%d,%d: %s (%s)\n", tokens[i].lineNum, tokens[i].colNum,
 			tokens[i].lexeme, token_type_to_string(tokens[i].type));
+	if (end == bf + size)
+		return 0;
 	goto next;
 }

@@ -111,7 +111,7 @@ typedef struct ParseTreeNode {
 	Token *token;
 	NodeType type;
 	unsigned int childCount;
-	struct ParseTreeNode *children[32];
+	struct ParseTreeNode *children[128];
 } ParseTreeNode;
 
 typedef struct {

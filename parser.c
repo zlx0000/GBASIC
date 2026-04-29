@@ -208,17 +208,19 @@ ParseTreeNode *parseAndExpr(ParserContext *context)
 {
 	ParseTreeNode *node =
 		(ParseTreeNode *)calloc(1, sizeof(ParseTreeNode));
-	node->childCount = 0;
+	int cnt = 0;
 	node->type = AND_EXPR;
-	node->children[0] = parseAddExpr(context);
-	if (!strcasecmp(context->tokenPtr->lexeme, "AND")) {
+	node->children[cnt] = parseAddExpr(context);
+	cnt++;
+	while (strcasecmp(context->tokenPtr->lexeme, "AND") == 0) {
 		struct ParseTreeNode *node2 = parseAndOperand(context);
 		node->children[1] = node2;
-		node->childCount++;
+		cnt++;
 		struct ParseTreeNode *node3 = parseAddExpr(context);
 		node->children[2] = node3;
-		node->childCount++;
+		cnt++;
 	}
+	node->childCount = cnt;
 	return node;
 }
 

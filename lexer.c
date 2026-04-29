@@ -7,7 +7,7 @@ typedef enum {
 	MATCH
 } DFA_state;
 
-DFA_state is_int(char *t)
+static DFA_state is_int(char *t)
 {
 	char *p = t;
 	enum state {
@@ -49,7 +49,7 @@ DFA_state is_int(char *t)
 	}
 }
 
-DFA_state is_float(char *t)
+static DFA_state is_float(char *t)
 {
 	char *p = t;
 	enum state {
@@ -115,7 +115,7 @@ DFA_state is_float(char *t)
 	}
 }
 
-DFA_state is_space(char *t)
+static DFA_state is_space(char *t)
 {
 	char *p = t;
 	enum state {
@@ -145,7 +145,7 @@ DFA_state is_space(char *t)
 	}
 }
 
-DFA_state is_str(char *t)
+static DFA_state is_str(char *t)
 {
 	char *p = t;
 	enum state {
@@ -190,7 +190,7 @@ DFA_state is_str(char *t)
 	}
 }
 
-DFA_state is_keyword(char* t)
+static DFA_state is_keyword(char* t)
 {
     for (int i = 0; i < KEYWORDS_SIZE; i++) {
         size_t len_t = strlen(t);
@@ -206,7 +206,7 @@ DFA_state is_keyword(char* t)
     return MISMATCH;
 }
 
-DFA_state is_ident(char *t)
+static DFA_state is_ident(char *t)
 {
 	char *p = t;
 	enum state {
@@ -246,7 +246,7 @@ DFA_state is_ident(char *t)
 	}
 }
 
-DFA_state is_semicolon(char *t)
+static DFA_state is_semicolon(char *t)
 {
 	int len = strlen(t);
 	if (len > 1)
@@ -259,7 +259,7 @@ DFA_state is_semicolon(char *t)
 	}
 }
 
-DFA_state is_comma(char *t)
+static DFA_state is_comma(char *t)
 {
 	int len = strlen(t);
 	if (len > 1)
@@ -272,7 +272,7 @@ DFA_state is_comma(char *t)
 	}
 }
 
-DFA_state is_op(char *t)
+static DFA_state is_op(char *t)
 {
 	int len = strlen(t);
 	if (len > 1)
@@ -285,7 +285,7 @@ DFA_state is_op(char *t)
 	}
 }
 
-DFA_state is_paren(char *t)
+static DFA_state is_paren(char *t)
 {
 	int len = strlen(t);
 	if (len > 1)
@@ -298,9 +298,8 @@ DFA_state is_paren(char *t)
 	}
 }
 
-DFA_state is_relop(char *t)
+static DFA_state is_relop(char *t)
 {
-	char *p = t;
     for (int i = 0; i < RELOPS_SIZE; i++) {
         size_t len_t = strlen(t);
         size_t len_k = strlen(relops[i]);
@@ -315,7 +314,7 @@ DFA_state is_relop(char *t)
     return MISMATCH;
 }
 
-bool possible(DFA_state *s)
+static bool possible(DFA_state *s)
 {
 	for (TokenType i = TOKEN_TYPE_NULL+1; i < TOKEN_TYPE_END; i++) {
 		if (s[i] != MISMATCH)
@@ -324,7 +323,7 @@ bool possible(DFA_state *s)
 	return false;
 }
 
-Literal literal(TokenType t, char *lexeme)
+static Literal literal(TokenType t, char *lexeme)
 {
 	Literal r;
 	memset(&r, 0, sizeof(r));
@@ -348,6 +347,19 @@ Literal literal(TokenType t, char *lexeme)
 				else {
 					if (lexeme[i] == 'n')
 						r.string[j++] = '\n';
+					else if (IS_DIGIT(lexeme[i])) {
+						int c = lexeme[i] - '0';
+						i++;
+						while (IS_DIGIT(lexeme[i])) {
+							c = c * 10;
+							c += lexeme[i] - '0';
+							i++;
+						}
+						if (c <= INT8_MAX)
+							r.string[j++] = (char)c;
+						else
+							r.string[j++] = lexeme[i];
+					}
 					else
 						r.string[j++] = lexeme[i];
 					escape = false;
@@ -454,6 +466,15 @@ next:
 		}
 	}
 	if (m.type != TOKEN_TYPE_NULL) {
+		if (tokenslen >= 1){
+			if (tokens[tokenslen-1].type == INT_TOKEN
+				|| tokens[tokenslen-1].type == FLOAT_TOKEN) {
+				if (m.type == IDENT_TOKEN) {
+					fprintf(stderr, "unexpected token at %d,%d: `%s`\n", lineNum, col, t);
+					return -1;
+				}
+			}
+		}
 		if (m.type != SPACE_TOKEN) {
 			strncpy(tokens[tokenslen].lexeme, start, m.len);
 			tokens[tokenslen].lexeme[m.len] = '\0';
@@ -473,6 +494,9 @@ next:
 		fprintf(stderr, "unexpected token at %d,%d: `%s`\n", lineNum, col, t);
 		return -1;
 	}
+	if (tokenslen >= 1 && tokens[tokenslen-1].type == KEYWORD_TOKEN
+		&& strcasecmp(tokens[tokenslen-1].lexeme, "REM") == 0)
+		return tokenslen;
 	goto next;
 
 	return tokenslen;
